@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<th:block th:replace="~{base :: head('Мої завантаження')}"></th:block>
+
+<body data-page="downloads">
+<th:block th:replace="~{base :: header}"></th:block>
+
+<th:block th:replace="~{base :: container(~{::content})}">
+    <th:block th:fragment="content">
+        <section class="page">
+
+            <div class="alert" role="alert" aria-live="polite">
+                <div class="alert--error" th:if="${error}" th:text="${error}"></div>
+            </div>
+
+            <div class="card card--form" aria-labelledby="addTitle">
+                <h2 id="addTitle" class="h3">Додати завантаження</h2>
+                <form class="form" th:action="@{/downloads}" th:object="${form}" method="post" novalidate>
+                    <div class="input-group input-group--block" data-input-group>
+                        <input type="url" th:field="*{url}" placeholder="https://..." required
+                               inputmode="url" class="mono" aria-label="URL для завантаження"/>
+                        <button type="submit" class="btn btn--primary input-group__btn">Додати</button>
+                    </div>
+                    <small class="help">Вставте повний URL файлу</small>
+                </form>
+            </div>
+
+            <div class="card" aria-labelledby="listTitle">
+                <h2 id="listTitle" class="h3">Список</h2>
+
+                <div class="table-wrap">
+                    <table class="table table--responsive">
+                        <thead>
+                        <tr>
+                            <th scope="col">URL</th>
+                            <th scope="col">Файл</th>
+                            <th scope="col">Статус</th>
+                            <th scope="col">Прогрес</th>
+                            <th scope="col">Дії</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="d : ${items}">
+                            <td data-col="URL"><span class="mono" th:text="${d.url}">url</span></td>
+                            <td data-col="Файл"><span class="mono" th:text="${d.fileName} ?: '-'">file</span></td>
+                            <td data-col="Статус">
+                    <span class="badge"
+                          th:classappend="
+                            ${d.status}=='RUNNING' ? ' badge--running' :
+                            (${d.status}=='PAUSED' ? ' badge--paused' :
+                            (${d.status}=='CANCELED' ? ' badge--canceled' : ' badge--default'))"
+                          th:text="${d.status}">status</span>
+                            </td>
+                            <td data-col="Прогрес">
+                                <div class="progress" th:with="rec=${d.receivedBytes}, tot=${d.totalBytes}">
+                                    <div class="progress__nums">
+                                        <span class="mono" th:text="${rec}">0</span>/<span class="mono" th:text="${tot}">0</span>
+                                    </div>
+                                    <div class="progress__bar">
+                                        <div class="progress__bar-fill"
+                                             th:attr="data-received=${rec},data-total=${tot}"
+                                             role="progressbar"
+                                             aria-label="Прогрес завантаження"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100"
+                                             aria-valuenow="0"></div>
+                                    </div>
+                                    <div class="progress__hint" data-wait th:if="${d.totalBytes} == 0">Очікування…</div>
+                                </div>
+                            </td>
+                            <td data-col="Дії">
+                                <div class="actions">
+                                    <form th:action="@{|/downloads/${d.id}/status|}" method="post" class="inline">
+                                        <input type="hidden" name="s" value="RUNNING"/>
+                                        <button type="submit" class="btn btn--primary btn--sm"
+                                                title="Старт" aria-label="Старт">▶</button>
+                                    </form>
+                                    <form th:action="@{|/downloads/${d.id}/status|}" method="post" class="inline">
+                                        <input type="hidden" name="s" value="PAUSED"/>
+                                        <button type="submit" class="btn btn--ghost btn--sm"
+                                                title="Пауза" aria-label="Пауза">⏸</button>
+                                    </form>
+                                    <form th:action="@{|/downloads/${d.id}/status|}" method="post" class="inline">
+                                        <input type="hidden" name="s" value="CANCELED"/>
+                                        <button type="submit" class="btn btn--danger btn--sm"
+                                                title="Скасувати" aria-label="Скасувати">⏹</button>
+                                    </form>
+                                    <form th:action="@{|/downloads/${d.id}/delete|}" method="post" class="inline"
+                                          data-confirm="Видалити це завантаження безповоротно?">
+                                        <button type="submit" class="btn btn--danger btn--sm"
+                                                title="Видалити" aria-label="Видалити">🗑</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </section>
+
+        <div class="modal" id="confirmModal" role="dialog" aria-modal="true"
+             aria-hidden="true" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+            <div class="modal__backdrop" data-close></div>
+            <div class="modal__dialog" role="document">
+                <h3 id="confirmTitle" class="h4">Підтвердження</h3>
+                <p id="confirmText">Ви впевнені?</p>
+                <div class="modal__actions">
+                    <button type="button" class="btn btn--ghost" data-close>Скасувати</button>
+                    <button type="button" class="btn btn--danger" id="confirmOk">Так, видалити</button>
+                </div>
+            </div>
+        </div>
+    </th:block>
+</th:block>
+
+<th:block th:replace="~{base :: footer}"></th:block>
+</body>
+</html>
