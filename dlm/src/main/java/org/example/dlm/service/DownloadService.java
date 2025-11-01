@@ -3,6 +3,10 @@ package org.example.dlm.service;
 import lombok.RequiredArgsConstructor;
 import org.example.dlm.domain.Download;
 import org.example.dlm.domain.DownloadStatus;
+import org.example.dlm.domain.Segment;
+import org.example.dlm.iterator.DbSegmentCollection;
+import org.example.dlm.iterator.SegmentIterator;
+import org.example.dlm.iterator.SegmentOrder;
 import org.example.dlm.repo.DownloadRepo;
 import org.example.dlm.repo.SegmentRepo;
 import org.example.dlm.repo.StatsRepo;
@@ -12,8 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +71,32 @@ public class DownloadService {
 
         downloads.deleteById(downloadId);
     }
+
+    //  ITERATOR (лаба №4)
+
+    @SuppressWarnings("unused")
+    @Transactional(readOnly = true)
+    public SegmentIterator iteratorForDownload(UUID downloadId,
+                                               SegmentOrder order,
+                                               boolean onlyPending) {
+        List<Segment> list = segments.findByDownload_Id(downloadId);
+        var collection = new DbSegmentCollection(list, order, onlyPending);
+        return collection.iterator();
+    }
+
+    @SuppressWarnings("unused")
+    @Transactional(readOnly = true)
+    public List<Segment> pickSegmentsForRun(UUID downloadId, int limit) {
+        var it = iteratorForDownload(downloadId, SegmentOrder.BY_LEFTMOST_GAP, true);
+        int cap = Math.max(1, limit);
+
+        List<Segment> picked = new ArrayList<>(cap);
+        while (it.hasNext() && picked.size() < cap) {
+            picked.add(it.next());
+        }
+        return picked;
+    }
+
 
 
     private void validateUrl(String url) {
