@@ -52,6 +52,7 @@ public class DownloadService {
         return downloads.save(d);
     }
 
+    //(лаба №5)
     @Transactional
     public void setStatusForUser(Long userId, UUID downloadId, DownloadStatus status) {
         var d = downloads.findByIdAndOwner_Id(downloadId, userId)
@@ -61,6 +62,8 @@ public class DownloadService {
         downloads.save(d);
     }
 
+
+    //(лаба №5)
     @Transactional
     public void deleteForUser(Long userId, UUID downloadId) {
         downloads.findByIdAndOwner_Id(downloadId, userId)
