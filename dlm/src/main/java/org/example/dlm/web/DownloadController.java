@@ -1,6 +1,11 @@
 package org.example.dlm.web;
 
 import lombok.RequiredArgsConstructor;
+import org.example.dlm.command.CommandBus;
+import org.example.dlm.command.download.CancelDownloadCommand;
+import org.example.dlm.command.download.DeleteDownloadCommand;
+import org.example.dlm.command.download.PauseDownloadCommand;
+import org.example.dlm.command.download.StartDownloadCommand;
 import org.example.dlm.domain.DownloadStatus;
 import org.example.dlm.service.DownloadService;
 import org.example.dlm.repo.UserRepo;
@@ -20,6 +25,7 @@ public class DownloadController {
 
     private final DownloadService downloadService;
     private final UserRepo users;
+    private final CommandBus bus;
 
     @GetMapping
     public String list(Model model, @AuthenticationPrincipal UserDetails auth) {
@@ -50,22 +56,25 @@ public class DownloadController {
         return "redirect:/downloads";
     }
 
-    /** Універсальна зміна статусу (демо-кнопки: Старт/Пауза/Скасувати). */
     @PostMapping("/{id}/status")
     public String setStatus(@PathVariable UUID id,
                             @RequestParam("s") DownloadStatus status,
                             @AuthenticationPrincipal UserDetails auth) {
         var user = users.findByUsername(auth.getUsername()).orElseThrow();
-        downloadService.setStatusForUser(user.getId(), id, status);
+        switch (status) {
+            case RUNNING -> bus.execute(new StartDownloadCommand(downloadService, user.getId(), id));
+            case PAUSED  -> bus.execute(new PauseDownloadCommand(downloadService, user.getId(), id));
+            case CANCELED-> bus.execute(new CancelDownloadCommand(downloadService, user.getId(), id));
+            default      -> downloadService.setStatusForUser(user.getId(), id, status); // fallback
+        }
         return "redirect:/downloads";
     }
 
-    /** Повне видалення завантаження. */
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable UUID id,
                          @AuthenticationPrincipal UserDetails auth) {
         var user = users.findByUsername(auth.getUsername()).orElseThrow();
-        downloadService.deleteForUser(user.getId(), id);
+        bus.execute(new DeleteDownloadCommand(downloadService, user.getId(), id));
         return "redirect:/downloads?deleted";
     }
 }
