@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<th:block th:replace="~{base :: head('Налаштування')}"></th:block>
+
+<body data-page="settings">
+<th:block th:replace="~{base :: header}"></th:block>
+
+<th:block th:replace="~{base :: container(~{::content})}">
+    <th:block th:fragment="content">
+        <section class="page">
+            <div class="alert" role="status" aria-live="polite">
+                <div class="alert--success" th:if="${param.saved}">Налаштування збережено ✅</div>
+            </div>
+
+            <div class="card card--form" aria-labelledby="settingsTitle">
+                <h1 id="settingsTitle" class="h2">Налаштування</h1>
+
+                <form class="form" th:action="@{/settings}" th:object="${settings}" method="post" novalidate>
+                    <input type="hidden" th:field="*{id}"/>
+
+                    <div class="form__field">
+                        <label for="defaultSegments">Кількість сегментів (≥1)</label>
+                        <input id="defaultSegments" name="defaultSegments" type="number" min="1"
+                               th:value="*{defaultSegments}" required aria-describedby="segments-help"/>
+                        <small id="segments-help" class="help">
+                            Більше сегментів — вища швидкість на швидких серверах. Почніть із 4–8.
+                        </small>
+                    </div>
+
+                    <div class="form__field">
+                        <label for="globalSpeedLimitBps">Глобальний ліміт швидкості, B/s (0 = без ліміту)</label>
+                        <input id="globalSpeedLimitBps" name="globalSpeedLimitBps" type="number" min="0"
+                               th:value="*{globalSpeedLimitBps}" required aria-describedby="limit-help"/>
+                        <small id="limit-help" class="help">
+                            Обмежує сумарну швидкість усіх завантажень. 0 — вимкнути ліміт.
+                        </small>
+                    </div>
+
+                    <div class="form__actions">
+                        <button type="submit" class="btn btn--primary">Зберегти</button>
+                        <a class="btn btn--ghost" th:href="@{/downloads}">До завантажень</a>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </th:block>
+</th:block>
+
+<th:block th:replace="~{base :: footer}"></th:block>
+</body>
+</html>
