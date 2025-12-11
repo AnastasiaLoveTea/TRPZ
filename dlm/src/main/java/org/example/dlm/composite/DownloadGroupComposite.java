@@ -12,7 +12,6 @@ public class DownloadGroupComposite implements DownloadComponent {
         this.name = name;
     }
 
-    // аналоги Add/Remove/GetChild з діаграми
     public void add(DownloadComponent child) {
         children.add(child);
     }
@@ -69,3 +68,4 @@ public class DownloadGroupComposite implements DownloadComponent {
         return List.copyOf(children);
     }
 }
+
