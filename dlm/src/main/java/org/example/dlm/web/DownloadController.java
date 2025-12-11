@@ -75,6 +75,13 @@ public class DownloadController {
         return "redirect:/downloads?deleted";
     }
 
+    @PostMapping("/pause-all")
+    public String pauseAll(@AuthenticationPrincipal UserDetails auth) {
+        var user = users.findByUsername(auth.getUsername()).orElseThrow();
+        downloadService.pauseAllForUser(user.getId());
+        return "redirect:/downloads";
+    }
+
     @GetMapping("/progress")
     @ResponseBody
     public List<DownloadProgressDto> progress(@AuthenticationPrincipal UserDetails auth) {
