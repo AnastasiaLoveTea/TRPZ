@@ -31,6 +31,13 @@
 
             <div class="card" aria-labelledby="listTitle">
                 <h2 id="listTitle" class="h3">Список</h2>
+                <form th:action="@{/downloads/pause-all}" method="post" class="inline">
+                    <button type="submit" class="btn btn--ghost btn--sm"
+                            title="Поставити на паузу всі"
+                            aria-label="Поставити на паузу всі">
+                        ⏸ Усі
+                    </button>
+                </form>
 
                 <div class="table-wrap">
                     <table class="table table--responsive">
