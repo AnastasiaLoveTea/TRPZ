@@ -13,6 +13,8 @@ import org.example.dlm.repo.DownloadRepo;
 import org.example.dlm.repo.SegmentRepo;
 import org.example.dlm.repo.StatsRepo;
 import org.example.dlm.repo.UserRepo;
+import org.example.dlm.composite.DownloadGroupComposite;
+import org.example.dlm.composite.SingleDownloadLeaf;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -186,6 +188,23 @@ public class DownloadService {
             picked.add(it.next());
         }
         return picked;
+    }
+
+    @Transactional
+    public void pauseAllForUser(Long userId) {
+        List<Download> list = listByUser(userId);
+        DownloadGroupComposite root = new DownloadGroupComposite("All downloads");
+
+        for (Download d : list) {
+            root.add(new SingleDownloadLeaf(
+                    userId,
+                    d.getId(),
+                    this,
+                    downloads   
+            ));
+        }
+
+        root.pause(); 
     }
 
 
