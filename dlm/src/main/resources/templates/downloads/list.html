@@ -38,6 +38,12 @@
                         ⏸ Усі
                     </button>
                 </form>
+                <form th:action="@{/downloads/import}" method="post" class="inline">
+                    <input type="text" name="peer" placeholder="localhost:8081" required>
+                    <button type="submit" class="btn btn--ghost btn--sm">
+                        Імпортувати з Peer
+                    </button>
+                </form>
 
                 <div class="table-wrap">
                     <table class="table table--responsive">
