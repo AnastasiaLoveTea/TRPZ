@@ -8,6 +8,7 @@ import org.example.dlm.service.DownloadService;
 import org.example.dlm.service.integration.ManualUrlHandler;
 import org.example.dlm.web.dto.DownloadForm;
 import org.example.dlm.web.dto.DownloadProgressDto;
+import org.example.dlm.p2p.PeerClient;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -26,6 +27,7 @@ public class DownloadController {
     private final DownloadService downloadService;
     private final UserRepo users;
     private final StatsRepo stats;
+    private final PeerClient peerClient;
 
     private final ManualUrlHandler manualUrlHandler;
 
@@ -79,6 +81,22 @@ public class DownloadController {
     public String pauseAll(@AuthenticationPrincipal UserDetails auth) {
         var user = users.findByUsername(auth.getUsername()).orElseThrow();
         downloadService.pauseAllForUser(user.getId());
+        return "redirect:/downloads";
+    }
+
+    @PostMapping("/import")
+    public String importFromPeer(
+            @RequestParam String peer,
+            @AuthenticationPrincipal UserDetails auth
+    ) {
+        var user = users.findByUsername(auth.getUsername()).orElseThrow();
+
+        var remoteDownloads = peerClient.fetchDownloads(peer);
+
+        for (var rd : remoteDownloads) {
+            downloadService.addUrl(user.getId(), rd.url());
+        }
+
         return "redirect:/downloads";
     }
 
