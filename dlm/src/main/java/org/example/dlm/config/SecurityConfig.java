@@ -19,7 +19,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .headers(h -> h.frameOptions(f -> f.disable()))   // H2 console
+                .headers(h -> h.frameOptions(f -> f.disable()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(
@@ -27,6 +27,7 @@ public class SecurityConfig {
                                 "/css/**", "/js/**", "/images/**", "/webjars/**",
                                 "/h2-console/**"
                         ).permitAll()
+                        .requestMatchers("/peer/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(f -> f
